@@ -23,10 +23,6 @@ exports.Type = new GraphQLObjectType({
     },
     seed: {
       type: Seed.Type,
-      resolve: async ({ seed_id: seedId }) => {
-        const { data } = await axios.post(`http://dice/get-seed`, { seedId });
-        return data;
-      },
     },
   }),
 });

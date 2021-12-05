@@ -83,6 +83,71 @@ exports.rollDice = ({ user, amount, target }) =>
     return bet;
   });
 
+exports.spinWheel = ({ user, amount }) =>
+  knex.transaction(async trx => {
+    assert(amount >= 0);
+
+    let [seed] = await trx('seed').where('user', user);
+
+    if (!seed) {
+      const secret = crypto.randomBytes(32).toString('hex');
+      const hash = crypto.createHash('sha256').update(secret).digest('hex');
+
+      [seed] = await trx('seed')
+        .insert({ id: uuid(), user, secret, hash, nonce: 0, active: true })
+        .returning('*');
+    }
+
+    if (!seed_globalValue) {
+      seed_globalValue = seed.nonce;
+    } else {
+      seed_globalValue++;
+    }
+
+    const nonce = String(seed_globalValue);
+
+    const hmac = crypto
+      .createHmac('sha256', seed.secret)
+      .update(nonce)
+      .digest('hex');
+
+    const int = parseInt(hmac.substr(0, 8), 16);
+    const float = int / 2 ** 32;
+
+    const result = Math.floor(float * 10);
+    const odds = (9 - result) / 10;
+
+    let multiplyer = 0;
+
+    if (odds === 0.1) multiplyer = 1.5;
+    if (odds >= 0.2 && odds <= 0.8) multiplyer = 1.2;
+
+    const payout = amount * multiplyer;
+
+    const [bet] = await trx('bet')
+      .insert({
+        id: uuid(),
+        seed_id: seed.id,
+        user,
+        amount,
+        payout,
+        result,
+        target: 0,
+        nonce,
+      })
+      .returning('*');
+
+    await trx('seed')
+      .update('nonce', trx.raw('nonce + 1'))
+      .where('id', seed.id);
+
+    await redis.publish('wheel', JSON.stringify(bet));
+
+    bet.seed = seed;
+
+    return bet;
+  });
+
 exports.getBets = async ({ user, limit, offset }) => {
   const bets = await knex('bet')
     .where('user', user)

@@ -37,5 +37,19 @@ exports.Type = new GraphQLObjectType({
         return data;
       },
     },
+
+    spinWheel: {
+      type: DiceBet.Type,
+      args: {
+        amount: { type: GraphQLNonNull(GraphQLFloat) },
+      },
+      async resolve(parent, { amount }, { user }) {
+        const { data } = await axios.post(`http://dice/spin-wheel`, {
+          user,
+          amount,
+        });
+        return data;
+      },
+    },
   }),
 });

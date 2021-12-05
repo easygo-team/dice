@@ -7,9 +7,10 @@ const {
   getSeed,
   rotateSeed,
   getActiveSeed,
+  spinWheel,
 } = require('./dice');
 
-const response = (handler) => async (req, res) => {
+const response = handler => async (req, res) => {
   try {
     res.send(await handler(req.body));
   } catch (e) {
@@ -39,6 +40,11 @@ async function start() {
     response(async ({ user, amount, target }) =>
       rollDice({ user, amount, target })
     )
+  );
+
+  app.post(
+    '/spin-wheel',
+    response(async ({ user, amount }) => spinWheel({ user, amount }))
   );
 
   app.post(
