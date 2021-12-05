@@ -1,15 +1,15 @@
 const { v4: uuid } = require('uuid');
 const { knex } = require('./knex');
 
-exports.updateStatistic = async ({ user, amount, payout }) => {
+exports.updateStatistic = async ({ user, amount, payout }, game) => {
   await knex.raw(
     `
       insert into statistic (
-        "id", "user", "wagered", "profit"
+        "id", "user", "wagered", "profit", "game"
       ) values (
-        :id, :user, :wagered, :profit
+        :id, :user, :wagered, :profit, :game
       )
-      on conflict ("user") do  update
+      on conflict ("user", "game") do  update
       set 
       wagered = statistic.wagered + :wagered,
       profit = statistic.profit + :profit
@@ -17,6 +17,7 @@ exports.updateStatistic = async ({ user, amount, payout }) => {
     {
       id: uuid(),
       user,
+      game,
       wagered: amount,
       profit: payout - amount,
     }
@@ -24,6 +25,11 @@ exports.updateStatistic = async ({ user, amount, payout }) => {
 };
 
 exports.getStatistic = async ({ user }) => {
-  const [statistic] = await knex('statistic').where('user', user);
-  return statistic;
+  const [diceStatistic] = await knex('statistic')
+    .where('user', user)
+    .where('game', 'dice');
+  const [wheelStatistic] = await knex('statistic')
+    .where('user', user)
+    .where('game', 'wheel');
+  return [diceStatistic, wheelStatistic];
 };
