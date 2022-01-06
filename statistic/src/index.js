@@ -16,11 +16,18 @@ async function start() {
   await knex.migrate.latest();
 
   redis.subscribe('dice');
+  redis.subscribe('wheel');
   redis.on('message', async (channel, json) => {
     try {
       const data = JSON.parse(json);
-      if (channel === 'dice') {
-        await updateStatistic(data);
+      switch (channel) {
+        case 'dice':
+        case 'wheel':
+          await updateStatistic(data);
+          break;
+
+        default:
+        // noop
       }
     } catch (e) {
       // eslint-disable-next-line no-console
