@@ -6,6 +6,7 @@ const {
 } = require('graphql');
 const axios = require('axios');
 const DiceBet = require('./dice-bet');
+const WheelBet = require('./wheel-bet');
 const Seed = require('./seed');
 
 exports.Type = new GraphQLObjectType({
@@ -39,7 +40,7 @@ exports.Type = new GraphQLObjectType({
     },
 
     spinWheel: {
-      type: DiceBet.Type,
+      type: WheelBet.Type,
       args: {
         amount: { type: GraphQLNonNull(GraphQLFloat) },
       },
