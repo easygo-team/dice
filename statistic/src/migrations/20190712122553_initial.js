@@ -4,8 +4,8 @@ exports.up = async (knex) => {
 
     table.string('user').notNull().unique();
 
-    table.float('wagered').notNull();
-    table.float('profit').notNull();
+    table.float('wagered').notNull().defaultTo(0);
+    table.float('profit').notNull().defaultTo(0);
   });
 };
 
