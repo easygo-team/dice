@@ -23,15 +23,21 @@ exports.rollDice = ({ user, amount, target }) =>
     assert(target < 99);
     assert(amount >= 0);
 
-    let [seed] = await trx('seed').where('user', user);
+    let [seed] = await trx('seed').where('user', user).forUpdate();
 
     if (!seed) {
       const secret = crypto.randomBytes(32).toString('hex');
       const hash = crypto.createHash('sha256').update(secret).digest('hex');
 
-      [seed] = await trx('seed')
-        .insert({ id: uuid(), user, secret, hash, nonce: 0, active: true })
-        .returning('*');
+      await trx.raw(
+        `insert into "seed" 
+              ("id", "user", "secret", "hash", "nonce", "active") values 
+              (:id, :user, :secret, :hash, :nonce, :active) 
+              on conflict do nothing`,
+        { id: uuid(), user, secret, hash, nonce: 0, active: true }
+      );
+
+      [seed] = await trx('seed').where('user', user).forUpdate();
     }
 
     const nonce = String(seed.nonce + 1);
