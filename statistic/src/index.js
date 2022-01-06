@@ -23,7 +23,7 @@ async function start() {
       switch (channel) {
         case 'dice':
         case 'wheel':
-          await updateStatistic(data);
+          await updateStatistic(data, channel);
           break;
 
         default:
