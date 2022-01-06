@@ -27,7 +27,10 @@ exports.spinWheel = ({ user, amount }) =>
   knex.transaction(async (trx) => {
     assert(amount >= 0);
 
-    let [seed] = await trx('seed').where('user', user).forUpdate();
+    let [seed] = await trx('seed')
+      .where('user', user)
+      .andWhere('active', true)
+      .forUpdate();
 
     if (!seed) {
       const secret = crypto.randomBytes(32).toString('hex');
@@ -41,7 +44,10 @@ exports.spinWheel = ({ user, amount }) =>
         { id: uuid(), user, secret, hash, nonce: 0, active: true }
       );
 
-      [seed] = await trx('seed').where('user', user).forUpdate();
+      [seed] = await trx('seed')
+        .where('user', user)
+        .andWhere('active', true)
+        .forUpdate();
     }
 
     const nonce = String(seed.nonce + 1);
@@ -75,7 +81,7 @@ exports.spinWheel = ({ user, amount }) =>
         payout,
         result,
         multiplier,
-        nonce
+        nonce,
       })
       .returning('*');
 
