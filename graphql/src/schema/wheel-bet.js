@@ -8,6 +8,8 @@ const axios = require('axios');
 const User = require('./user');
 const Seed = require('./seed');
 
+const seedCache = {};
+
 exports.Type = new GraphQLObjectType({
   name: 'WheelBet',
   fields: () => ({
@@ -24,7 +26,12 @@ exports.Type = new GraphQLObjectType({
     seed: {
       type: Seed.Type,
       resolve: async ({ seed_id: seedId }) => {
+        if (seedCache[seedId]) {
+          return seedCache[seedId];
+        }
+
         const { data } = await axios.post(`http://wheel/get-seed`, { seedId });
+        seedCache[seedId] = data;
         return data;
       },
     },
