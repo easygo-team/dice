@@ -36,7 +36,7 @@ exports.rollDice = ({ user, amount, target }) =>
         `insert into "seed" 
               ("id", "user", "secret", "hash", "nonce", "active") values 
               (:id, :user, :secret, :hash, :nonce, :active) 
-              on conflict do nothing`,
+              on conflict ("user") where active = true do nothing`,
         { id: uuid(), user, secret, hash, nonce: 0, active: true }
       );
 
