@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-expressions */
 const _ = require('lodash');
 const { expect } = require('chai');
+const { v4: uuid } = require('uuid');
 const { rollDice, getActiveSeed, rotateSeed } = require('./dice');
 const { knex } = require('./knex');
 
@@ -15,8 +16,9 @@ describe('dice', () => {
   });
 
   it('used nonce in order', async () => {
+    const user = uuid();
     let bets = await Promise.all(
-      _.range(5).map(() => rollDice({ user: 'test', amount: 0.1, target: 50 }))
+      _.range(5).map(() => rollDice({ user, amount: 0.1, target: 50 }))
     );
 
     // lets sort them in case bets get returned out of order
