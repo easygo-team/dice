@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-expressions */
 const _ = require('lodash');
 const { expect } = require('chai');
-const { rollDice } = require('./dice');
+const { rollDice, getActiveSeed, rotateSeed } = require('./dice');
 const { knex } = require('./knex');
 
 describe('dice', () => {
@@ -28,5 +28,28 @@ describe('dice', () => {
       expect(bet.nonce).to.equal(nextNonce);
       nextNonce += 1;
     }
+  });
+
+  it('rotates seed', async () => {
+    const user = 'test';
+    const bet1 = await rollDice({ user, amount: 0.1, target: 50 });
+    expect(bet1).to.be.ok;
+    expect(bet1.seed_id).to.not.be.empty;
+
+    const { hash: hash1 } = await getActiveSeed({ user });
+    expect(hash1).to.not.be.empty;
+
+    const { hash, secret } = await rotateSeed({ user: 'test' });
+    expect(secret).to.not.be.empty;
+    expect(hash).to.equal(hash1);
+
+    const bet2 = await rollDice({ user, amount: 0.1, target: 50 });
+    expect(bet2).to.be.ok;
+    expect(bet2.seed_id).to.not.be.empty;
+    expect(bet2.seed_id).not.to.equal(bet1.seed_id);
+
+    const { hash: hash2 } = await getActiveSeed({ user });
+    expect(hash2).to.not.be.empty;
+    expect(hash2).to.not.equal(hash1);
   });
 });
