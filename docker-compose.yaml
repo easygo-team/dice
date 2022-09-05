@@ -10,44 +10,59 @@ services:
     working_dir: /node
     command: yarn start
     volumes:
-    - ./graphql:/node
+      - ./graphql:/node
     ports:
-    - 80:80
+      - 80:80
     depends_on:
-    - redis
+      - redis
 
   dice:
     image: node:12-alpine
     working_dir: /node
     command: yarn start
     volumes:
-    - ./dice:/node
+      - ./games/dice:/node
     ports:
-    - 80
+      - 80
     depends_on:
-    - redis
-    - dice-postgres
+      - redis
+      - dice-postgres
 
   dice-postgres:
     image: postgres:12-alpine
     environment:
-    - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=password
+
+  wheel:
+    image: node:12-alpine
+    working_dir: /node
+    command: yarn start
+    volumes:
+      - ./games/wheel:/node
+    ports:
+      - 80
+    depends_on:
+      - redis
+      - wheel-postgres
+
+  wheel-postgres:
+    image: postgres:12-alpine
+    environment:
+      - POSTGRES_PASSWORD=password
 
   statistic:
     image: node:12-alpine
     working_dir: /node
     command: yarn start
     volumes:
-    - ./statistic:/node
+      - ./statistic:/node
     ports:
-    - 80
+      - 80
     depends_on:
-    - redis
-    - statistic-postgres
+      - redis
+      - statistic-postgres
 
   statistic-postgres:
     image: postgres:12-alpine
     environment:
-    - POSTGRES_PASSWORD=password
-
-
+      - POSTGRES_PASSWORD=password

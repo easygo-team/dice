@@ -1,14 +1,14 @@
 {
-  "name": "dice",
+  "name": "wheel",
   "version": "1.0.0",
-  "description": "roll the dice :)",
+  "description": "spin the wheel :)",
   "main": "src/index.js",
   "author": "easygo",
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
     "start": "nodemon src/index.js",
-    "test": "docker-compose run --rm dice /node/node_modules/.bin/mocha src"
+    "test": "docker-compose run --rm wheel /node/node_modules/.bin/mocha src --exit"
   },
   "dependencies": {
     "body-parser": "^1.19.0",

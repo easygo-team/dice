@@ -1,7 +1,9 @@
 const _ = require('lodash');
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
+const DataLoader = require('dataloader');
 const schema = require('./schema');
+const { batchDiceSeeds, batchWheelSeeds } = require('./batch');
 
 async function start() {
   const app = express();
@@ -14,8 +16,10 @@ async function start() {
       to keep it simple we just allow passing in a user as a header and use
       that as an identifier withhin this project.
     */
+      const diceSeedLoader = new DataLoader(batchDiceSeeds);
+      const wheelSeedLoader = new DataLoader(batchWheelSeeds);
       const user = _.get(req, 'headers.x-user', 'easygo');
-      return { user };
+      return { user, diceSeedLoader, wheelSeedLoader };
     },
     introspection: true,
     playground: { endpoint: 'http://localhost/graphql' },

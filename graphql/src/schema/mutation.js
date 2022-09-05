@@ -6,6 +6,7 @@ const {
 } = require('graphql');
 const axios = require('axios');
 const DiceBet = require('./dice-bet');
+const WheelBet = require('./wheel-bet');
 const Seed = require('./seed');
 
 exports.Type = new GraphQLObjectType({
@@ -33,7 +34,30 @@ exports.Type = new GraphQLObjectType({
         const { data } = await axios.post(`http://dice/rotate-seed`, {
           user,
         });
+        return data;
+      },
+    },
 
+    spinWheel: {
+      type: WheelBet.Type,
+      args: {
+        amount: { type: GraphQLNonNull(GraphQLFloat) },
+      },
+      async resolve(parent, { amount }, { user }) {
+        const { data } = await axios.post(`http://wheel/spin-wheel`, {
+          user,
+          amount,
+        });
+        return data;
+      },
+    },
+
+    rotateWheelSeed: {
+      type: Seed.Type,
+      async resolve(parent, args, { user }) {
+        const { data } = await axios.post(`http://wheel/rotate-seed`, {
+          user,
+        });
         return data;
       },
     },

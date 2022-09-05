@@ -8,12 +8,11 @@ const User = require('./user');
 const Seed = require('./seed');
 
 exports.Type = new GraphQLObjectType({
-  name: 'DiceBet',
+  name: 'WheelBet',
   fields: () => ({
     id: { type: GraphQLString },
     amount: { type: GraphQLFloat },
     payout: { type: GraphQLFloat },
-    target: { type: GraphQLInt },
     result: { type: GraphQLInt },
     nonce: { type: GraphQLInt },
     user: {
@@ -22,8 +21,8 @@ exports.Type = new GraphQLObjectType({
     },
     seed: {
       type: Seed.Type,
-      resolve: async ({ seed_id: seedId }, _, { diceSeedLoader }) => {
-        const data = await diceSeedLoader.load(seedId);
+      resolve: async ({ seed_id: seedId }, _, { wheelSeedLoader }) => {
+        const data = await wheelSeedLoader.load(seedId);
         return data;
       },
     },

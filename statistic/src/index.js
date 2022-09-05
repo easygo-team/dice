@@ -4,6 +4,8 @@ const { knex } = require('./knex');
 const { redis } = require('./redis');
 const { updateStatistic, getStatistic } = require('./statistic');
 
+const possibleChannels = ['dice', 'wheel'];
+
 const response = (handler) => async (req, res) => {
   try {
     res.send(await handler(req.body));
@@ -15,13 +17,14 @@ const response = (handler) => async (req, res) => {
 async function start() {
   await knex.migrate.latest();
 
-  redis.subscribe('dice');
+  for (const c of possibleChannels) {
+    redis.subscribe(c);
+  }
+
   redis.on('message', async (channel, json) => {
     try {
-      const data = JSON.parse(json);
-      if (channel === 'dice') {
-        await updateStatistic(data);
-      }
+      const { user, amount, payout } = JSON.parse(json);
+      await updateStatistic(channel, user, amount, payout);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(e);

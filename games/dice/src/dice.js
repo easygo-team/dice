@@ -23,15 +23,21 @@ exports.rollDice = ({ user, amount, target }) =>
     assert(target < 99);
     assert(amount >= 0);
 
-    let [seed] = await trx('seed').where('user', user);
+    let [seed] = await trx('seed').where({ user, active: true }).forUpdate();
 
     if (!seed) {
       const secret = crypto.randomBytes(32).toString('hex');
       const hash = crypto.createHash('sha256').update(secret).digest('hex');
 
-      [seed] = await trx('seed')
-        .insert({ id: uuid(), user, secret, hash, nonce: 0, active: true })
-        .returning('*');
+      await trx.raw(
+        `insert into "seed" 
+              ("id", "user", "secret", "hash", "nonce", "active") values 
+              (:id, :user, :secret, :hash, :nonce, :active) 
+              on conflict ("user") where active = true do nothing`,
+        { id: uuid(), user, secret, hash, nonce: 0, active: true }
+      );
+
+      [seed] = await trx('seed').where({ user, active: true }).forUpdate();
     }
 
     const nonce = String(seed.nonce + 1);
@@ -86,6 +92,11 @@ exports.getBets = async ({ user, limit, offset }) => {
 exports.getSeed = async ({ seedId }) => {
   const [seed] = await knex('seed').where('id', seedId);
   return parseSeed(seed);
+};
+
+exports.getSeeds = async ({ seedIds }) => {
+  const seeds = await knex('seed').whereIn('id', seedIds);
+  return seeds.map((seed) => parseSeed(seed));
 };
 
 exports.rotateSeed = async ({ user }) => {
